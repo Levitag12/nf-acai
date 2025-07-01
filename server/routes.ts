@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { insertDocumentSchema, insertAttachmentSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
@@ -28,8 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       res.json(user);
     } catch (error) {
       console.error("Error fetching user:", error);
@@ -40,18 +39,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Document routes
   app.get("/api/documents", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const user = req.user;
 
       let documents;
       if (user.role === "ADMIN") {
         documents = await storage.getAllDocuments();
       } else {
-        documents = await storage.getDocumentsByConsultant(userId);
+        documents = await storage.getDocumentsByConsultant(user.id);
       }
 
       res.json(documents);
@@ -71,10 +65,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user has access to this document
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       
-      if (user?.role !== "ADMIN" && document.consultantId !== userId) {
+      if (user.role !== "ADMIN" && document.consultantId !== user.id) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -87,10 +80,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/documents", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       
-      if (user?.role !== "ADMIN") {
+      if (user.role !== "ADMIN") {
         return res.status(403).json({ message: "Only admins can create documents" });
       }
 
@@ -144,23 +136,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      const userId = req.user.claims.sub;
+      const user = req.user;
       
       const document = await storage.getDocumentById(id);
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
-
-      const user = await storage.getUser(userId);
       
       // Check permissions and valid status transitions
-      if (user?.role === "ADMIN") {
+      if (user.role === "ADMIN") {
         // Admin can confirm return received (RETURN_SENT -> COMPLETED)
         if (status === "COMPLETED" && document.status === "RETURN_SENT") {
           const updatedDocument = await storage.updateDocumentStatus(id, status);
           return res.json(updatedDocument);
         }
-      } else if (user?.role === "CONSULTANT" && document.consultantId === userId) {
+      } else if (user.role === "CONSULTANT" && document.consultantId === user.id) {
         // Consultant can confirm receipt (DELIVERED -> RECEIPT_CONFIRMED)
         if (status === "RECEIPT_CONFIRMED" && document.status === "DELIVERED") {
           const updatedDocument = await storage.updateDocumentStatus(id, status);
@@ -178,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/documents/:id/return", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
       const { id } = req.params;
-      const userId = req.user.claims.sub;
+      const user = req.user;
       const file = req.file;
 
       if (!file) {
@@ -191,7 +181,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if consultant owns this document and status is correct
-      if (document.consultantId !== userId || document.status !== "RECEIPT_CONFIRMED") {
+      if (document.consultantId !== user.id || document.status !== "RECEIPT_CONFIRMED") {
         return res.status(403).json({ message: "Cannot submit return for this document" });
       }
 
@@ -231,10 +221,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get consultants endpoint
   app.get("/api/consultants", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const user = req.user;
       
-      if (user?.role !== "ADMIN") {
+      if (user.role !== "ADMIN") {
         return res.status(403).json({ message: "Only admins can view consultants" });
       }
 
@@ -250,18 +239,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Stats endpoint
   app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
+      const user = req.user;
 
       let documents;
       if (user.role === "ADMIN") {
         documents = await storage.getAllDocuments();
       } else {
-        documents = await storage.getDocumentsByConsultant(userId);
+        documents = await storage.getDocumentsByConsultant(user.id);
       }
 
       const stats = {

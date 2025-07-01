@@ -1,10 +1,30 @@
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Bell, User } from "lucide-react";
+import { FileText, Bell, LogOut } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 export default function Navbar() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Erro ao fazer logout");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      setLocation("/login");
+      window.location.reload();
+    },
+  });
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -25,7 +45,7 @@ export default function Navbar() {
             <div className="hidden md:flex items-center space-x-4">
               <span className="text-sm text-gray-500">Bem-vindo,</span>
               <span className="text-sm font-medium text-gray-900">
-                {user?.name || user?.firstName || user?.email}
+                {user?.name || user?.email}
               </span>
               <Badge variant={user?.role === "ADMIN" ? "default" : "secondary"}>
                 {user?.role === "ADMIN" ? "Administrador" : "Consultor"}
@@ -40,9 +60,10 @@ export default function Navbar() {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
               >
-                <User className="h-5 w-5 text-gray-600" />
+                <LogOut className="h-5 w-5 text-gray-600" />
               </Button>
             </div>
           </div>

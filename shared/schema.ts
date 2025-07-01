@@ -38,17 +38,13 @@ export const documentStatusEnum = pgEnum("document_status", [
 // Attachment type enum
 export const attachmentTypeEnum = pgEnum("attachment_type", ["INITIAL", "RETURN"]);
 
-// User storage table.
-// (IMPORTANT) This table is mandatory for Replit Auth, don't drop it.
+// User storage table for local authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  name: text("name"),
-  hashedPassword: text("hashed_password"),
-  role: userRoleEnum("role").default("CONSULTANT"),
+  email: varchar("email").unique().notNull(),
+  name: varchar("name").notNull(),
+  hashedPassword: text("hashed_password").notNull(),
+  role: userRoleEnum("role").notNull().default("CONSULTANT"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

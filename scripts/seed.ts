@@ -15,12 +15,10 @@ async function seed() {
     const adminPassword = "g147g147g147";
     const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
     
-    const adminUser = await storage.upsertUser({
+    const adminUser = await storage.createUser({
       id: "admin-user-id",
       email: "admin@company.com",
       name: "Admin User",
-      firstName: "Admin",
-      lastName: "User",
       hashedPassword: hashedAdminPassword,
       role: "ADMIN",
     });
@@ -44,12 +42,10 @@ async function seed() {
       const hashedPassword = await bcrypt.hash(consultant.password, 10);
       const [firstName, lastName] = consultant.name.split(" ");
       
-      await storage.upsertUser({
+      await storage.createUser({
         id: consultant.email.split("@")[0], // Use email prefix as ID
         email: consultant.email,
         name: consultant.name,
-        firstName,
-        lastName,
         hashedPassword,
         role: "CONSULTANT",
       });
