@@ -12,7 +12,7 @@ async function seed() {
     console.log("🌱 Starting database seeding...");
 
     // Create Admin User
-    const adminPassword = "112233";
+    const adminPassword = "g147g147g147";
     const hashedAdminPassword = await bcrypt.hash(adminPassword, 10);
     
     const adminUser = await storage.upsertUser({
@@ -29,12 +29,11 @@ async function seed() {
 
     // Create Consultant Users
     const consultants: ConsultantData[] = [
-      { name: "Sergio Bandeira", email: "sergio.bandeira@company.com", password: generateRandomPassword() },
-      { name: "Mauricio Simões", email: "mauricio.simoes@company.com", password: generateRandomPassword() },
-      { name: "Mayco Muniz", email: "mayco.muniz@company.com", password: generateRandomPassword() },
-      { name: "Paulo Marcio", email: "paulo.marcio@company.com", password: generateRandomPassword() },
-      { name: "Fernando Basil", email: "fernando.basil@company.com", password: generateRandomPassword() },
-      { name: "Lucas Almeida", email: "lucas.almeida@company.com", password: generateRandomPassword() },
+      { name: "Sergio Bandeira", email: "sergio.bandeira@company.com", password: "123" },
+      { name: "Mauricio Simões", email: "mauricio.simoes@company.com", password: "124" },
+      { name: "Mayco Muniz", email: "mayco.muniz@company.com", password: "125" },
+      { name: "Paulo Marcio", email: "paulo.marcio@company.com", password: "126" },
+      { name: "Fernando Basil", email: "fernando.basil@company.com", password: "127" },
     ];
 
     console.log("\n📋 Consultant users created:");

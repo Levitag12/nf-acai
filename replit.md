@@ -112,6 +112,14 @@ This is a full-stack document management system built for a Brazilian resale com
 
 ## Changelog
 - July 01, 2025. Initial setup
+- July 01, 2025. Created user accounts:
+  - Admin: admin@company.com (senha: g147g147g147)
+  - Consultores: 
+    - sergio.bandeira@company.com (senha: 123)
+    - mauricio.simoes@company.com (senha: 124)
+    - mayco.muniz@company.com (senha: 125)
+    - paulo.marcio@company.com (senha: 126)
+    - fernando.basil@company.com (senha: 127)
 
 ## User Preferences
 
