@@ -1,0 +1,90 @@
+Hello! I need you to act as an expert full-stack software developer and create a new project from scratch. This project will be a robust and professional web application for a Brazilian resale company to manage commercial documents and implement a sophisticated workflow for tracking document delivery, receipt confirmation, and returns between an admin and a team of consultants.
+
+The user interface should be clean, modern, and heavily inspired by the data-grid layout seen in this image: https://i.imgur.com/GjN9NkN.png
+
+Please adhere strictly to the following technical specifications and features.
+
+### [1. TECHNOLOGY STACK]
+
+- **Framework:** Next.js 14+ with the App Router.
+- **Language:** TypeScript.
+- **Styling:** Tailwind CSS.
+- **UI Components:** **Shadcn/ui**. Please pre-install and configure it, setting up the `DataTable`, `Button`, `Input`, `Card`, `DropdownMenu`, `Badge`, and `AlertDialog`.
+- **Database ORM:** Drizzle ORM.
+- **Database:** Vercel Postgres.
+- **Authentication:** **Auth.js (NextAuth.js v5)** with a "Credentials Provider" (email/password).
+- **File Storage:** **Vercel Blob** for all file uploads.
+
+### [2. DATABASE SCHEMA]
+
+Please generate the Drizzle ORM schema with these specific tables and fields:
+
+1.  **User:**
+    - `id` (UUID, primary key)
+    - `name` (text)
+    - `email` (text, unique)
+    - `hashedPassword` (text)
+    - `role` (enum/text: 'ADMIN' or 'CONSULTANT')
+    - `createdAt` (timestamp)
+
+2.  **Document:**
+    - `id` (UUID, primary key)
+    - `title` (text)
+    - `status` (enum/text: **'DELIVERED', 'RECEIPT_CONFIRMED', 'RETURN_SENT', 'COMPLETED'**)
+    - `consultantId` (foreign key to User.id)
+    - `createdAt` (timestamp)
+    - `updatedAt` (timestamp)
+
+3.  **Attachment:**
+    - `id` (UUID, primary key)
+    - `documentId` (foreign key to Document.id)
+    - `fileName` (text)
+    - `fileUrl` (text) - The URL from Vercel Blob.
+    - `attachmentType` (enum/text: **'INITIAL', 'RETURN'**)
+    - `uploadedAt` (timestamp)
+
+### [3. CORE WORKFLOW & LOGIC]
+
+This workflow is critical. Please implement it exactly as described.
+
+**A) Admin's Role:**
+- **Creation:** An Admin creates a `Document`, assigns it to a `Consultant`, and uploads an `Attachment` with type 'INITIAL'. The initial `Document` status is **'DELIVERED'**.
+- **Tracking:** The Admin dashboard displays all documents and their current status (e.g., using colored Shadcn/ui Badges).
+- **Confirmation:** When a consultant submits a return (`RETURN_SENT` status), the Admin will see a button labeled **"Confirm Return Received"**. Clicking this button changes the document's status to **'COMPLETED'**.
+- **Reporting:** The Admin dashboard must include filter buttons to easily view documents by status: "Pending Receipt" (DELIVERED), "Pending Return" (RECEIPT_CONFIRMED), "Returns to Check" (RETURN_SENT), and "Completed".
+
+**B) Consultant's Role:**
+- **View:** A Consultant logs in and sees only the documents assigned to them.
+- **Receipt Confirmation:** For a document with 'DELIVERED' status, the Consultant sees a button labeled **"Confirm Receipt"**. The "Download" button for the initial attachment is **DISABLED**.
+- **Enabling Download:** After clicking "Confirm Receipt", the document status changes to **'RECEIPT_CONFIRMED'**, and the "Download" button for the 'INITIAL' attachment becomes **ENABLED**.
+- **Submitting a Return:** The Consultant has a button labeled **"Submit Return"**. Clicking it opens a modal where they can upload a new file. Upon successful upload, a new `Attachment` is created with type 'RETURN', and the document status changes to **'RETURN_SENT'**.
+
+### [4. INITIAL DATA SEEDING]
+
+Create a database seeding script (`/scripts/seed.ts`) that will populate the database with the initial users. This script should be runnable with `npm run seed`.
+
+1.  **Admin User:**
+    - Create one **ADMIN** user.
+    - **Login/Email:** `admin@company.com`
+    - **Password:** `112233` (please hash this password using bcrypt before storing).
+
+2.  **Consultant Users:**
+    - Create the following **CONSULTANT** users.
+    - Generate a **random, secure 3-digit password** for each consultant.
+    - **After seeding, print a list of the consultants' emails and their generated passwords to the console.**
+    - Users to create:
+        - Name: `Sergio Bandeira`, Email: `sergio.bandeira@company.com`
+        - Name: `Mauricio Simões`, Email: `mauricio.simoes@company.com`
+        - Name: `Mayco Muniz`, Email: `mayco.muniz@company.com`
+        - Name: `Paulo Marcio`, Email: `paulo.marcio@company.com`
+        - Name: `Fernando Basil`, Email: `fernando.basil@company.com`
+        - Name: `Lucas Almeida`, Email: `lucas.almeida@company.com`
+
+### [5. PROFESSIONAL PRACTICES]
+
+- Use **Next.js Server Actions** for all state changes and form submissions (confirming receipt, submitting returns, etc.).
+- Use **Zod** for data validation.
+- Ensure the layout is **responsive**.
+- Add code comments explaining the workflow logic.
+
+Please generate the complete project structure based on these detailed instructions. Thank you!
