@@ -26,15 +26,6 @@ export default function CreateDocumentModal({ open, onOpenChange }: CreateDocume
   // Fetch consultants
   const { data: consultants } = useQuery({
     queryKey: ["/api/consultants"],
-    queryFn: async () => {
-      // This would be a separate endpoint to fetch consultants
-      // For now, we'll use the users endpoint and filter
-      const response = await fetch("/api/users?role=CONSULTANT", {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch consultants");
-      return response.json();
-    },
     enabled: open,
   });
 
@@ -145,13 +136,13 @@ export default function CreateDocumentModal({ open, onOpenChange }: CreateDocume
                   <SelectValue placeholder="Selecionar consultor..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {/* Hardcoded consultants for now */}
-                  <SelectItem value="sergio-bandeira">Sergio Bandeira</SelectItem>
-                  <SelectItem value="mauricio-simoes">Mauricio Simões</SelectItem>
-                  <SelectItem value="mayco-muniz">Mayco Muniz</SelectItem>
-                  <SelectItem value="paulo-marcio">Paulo Marcio</SelectItem>
-                  <SelectItem value="fernando-basil">Fernando Basil</SelectItem>
-                  <SelectItem value="lucas-almeida">Lucas Almeida</SelectItem>
+                  {consultants && Array.isArray(consultants) ? consultants.map((consultant: any) => (
+                    <SelectItem key={consultant.id} value={consultant.id}>
+                      {consultant.name || `${consultant.firstName} ${consultant.lastName}`}
+                    </SelectItem>
+                  )) : (
+                    <SelectItem value="loading" disabled>Carregando consultores...</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

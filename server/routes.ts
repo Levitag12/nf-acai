@@ -1,11 +1,14 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertDocumentSchema, insertAttachmentSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
-import { put } from "@vercel/blob";
+// import { put } from "@vercel/blob";
+import { writeFileSync, mkdirSync } from "fs";
+import { join } from "path";
 
 // Configure multer for file uploads
 const upload = multer({
@@ -16,6 +19,9 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve uploaded files statically
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
+
   // Auth middleware
   await setupAuth(app);
 
@@ -104,16 +110,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create document
       const document = await storage.createDocument(documentData);
 
-      // Upload file to Vercel Blob
-      const blob = await put(file.originalname, file.buffer, {
-        access: 'public',
-      });
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = join(process.cwd(), 'uploads');
+      try {
+        mkdirSync(uploadsDir, { recursive: true });
+      } catch (err) {
+        // Directory already exists
+      }
+
+      // Save file locally
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const filePath = join(uploadsDir, fileName);
+      writeFileSync(filePath, file.buffer);
+      
+      const fileUrl = `/uploads/${fileName}`;
 
       // Create initial attachment
       const attachment = await storage.createAttachment({
         documentId: document.id,
         fileName: file.originalname,
-        fileUrl: blob.url,
+        fileUrl: fileUrl,
         attachmentType: "INITIAL",
       });
 
@@ -179,16 +195,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Cannot submit return for this document" });
       }
 
-      // Upload file to Vercel Blob
-      const blob = await put(file.originalname, file.buffer, {
-        access: 'public',
-      });
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = join(process.cwd(), 'uploads');
+      try {
+        mkdirSync(uploadsDir, { recursive: true });
+      } catch (err) {
+        // Directory already exists
+      }
+
+      // Save file locally
+      const fileName = `${Date.now()}-${file.originalname}`;
+      const filePath = join(uploadsDir, fileName);
+      writeFileSync(filePath, file.buffer);
+      
+      const fileUrl = `/uploads/${fileName}`;
 
       // Create return attachment
       const attachment = await storage.createAttachment({
         documentId: id,
         fileName: file.originalname,
-        fileUrl: blob.url,
+        fileUrl: fileUrl,
         attachmentType: "RETURN",
       });
 
@@ -199,6 +225,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error submitting return:", error);
       res.status(500).json({ message: "Failed to submit return" });
+    }
+  });
+
+  // Get consultants endpoint
+  app.get("/api/consultants", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== "ADMIN") {
+        return res.status(403).json({ message: "Only admins can view consultants" });
+      }
+
+      // Get all users with CONSULTANT role
+      const consultants = await storage.getAllConsultants();
+      res.json(consultants);
+    } catch (error) {
+      console.error("Error fetching consultants:", error);
+      res.status(500).json({ message: "Failed to fetch consultants" });
     }
   });
 
