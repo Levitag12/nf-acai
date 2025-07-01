@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { FileText, Bell, LogOut } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -21,8 +22,11 @@ export default function Navbar() {
       return response.json();
     },
     onSuccess: () => {
-      setLocation("/login");
-      window.location.reload();
+      // Clear all cached queries to reset authentication state
+      queryClient.clear();
+      setLocation("/");
+      // Force a page reload to ensure clean state
+      setTimeout(() => window.location.reload(), 100);
     },
   });
 

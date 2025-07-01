@@ -69,9 +69,10 @@ This is a full-stack document management system built for a Brazilian resale com
 4. **Completion**: Admin confirms return → status updates to COMPLETED
 
 ### Authentication Flow
-- Replit Auth OIDC integration with session-based authentication
+- Local authentication system with username/password login
+- Session-based authentication using PostgreSQL session store
 - Role-based access control for admin vs consultant features
-- Automatic user creation/update on authentication
+- Manual user creation with bcrypt password hashing
 
 ## External Dependencies
 
@@ -111,15 +112,20 @@ This is a full-stack document management system built for a Brazilian resale com
 - Vercel Blob storage configuration
 
 ## Changelog
-- July 01, 2025. Initial setup
-- July 01, 2025. Created user accounts:
-  - Admin: admin@company.com (senha: g147g147g147)
-  - Consultores: 
-    - sergio.bandeira@company.com (senha: 123)
-    - mauricio.simoes@company.com (senha: 124)
-    - mayco.muniz@company.com (senha: 125)
-    - paulo.marcio@company.com (senha: 126)
-    - fernando.basil@company.com (senha: 127)
+- July 01, 2025. Initial setup with Replit Auth
+- July 01, 2025. Migrated from Replit Auth to local authentication system:
+  - Removed Replit Auth integration and implemented traditional login/password system
+  - Updated database schema to support local auth (removed firstName, lastName, profileImageUrl)
+  - Created login page with Portuguese interface
+  - Implemented logout functionality with proper session management
+  - Created user accounts:
+    - Admin: admin@company.com (senha: g147g147g147)
+    - Consultores: 
+      - sergio.bandeira@company.com (senha: 123)
+      - mauricio.simoes@company.com (senha: 124)
+      - mayco.muniz@company.com (senha: 125)
+      - paulo.marcio@company.com (senha: 126)
+      - fernando.basil@company.com (senha: 127)
 
 ## User Preferences
 
