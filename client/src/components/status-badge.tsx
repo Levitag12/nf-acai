@@ -1,7 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 
+// 1. Adicionado "ARCHIVED" aos tipos de status permitidos
 interface StatusBadgeProps {
-  status: "DELIVERED" | "RECEIPT_CONFIRMED" | "RETURN_SENT" | "COMPLETED";
+  status: "DELIVERED" | "RECEIPT_CONFIRMED" | "RETURN_SENT" | "COMPLETED" | "ARCHIVED";
 }
 
 export default function StatusBadge({ status }: StatusBadgeProps) {
@@ -26,9 +27,24 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
       variant: "default" as const,
       className: "bg-purple-100 text-purple-800 hover:bg-purple-100",
     },
+    // 2. Adicionada a configuração para o novo status "ARCHIVED"
+    ARCHIVED: {
+      label: "Arquivado",
+      variant: "default" as const,
+      className: "bg-slate-100 text-slate-800 hover:bg-slate-100",
+    },
   };
 
+  // 3. Adicionado um fallback para evitar erros futuros
   const config = statusConfig[status];
+
+  if (!config) {
+    return (
+      <Badge variant="secondary">
+        Desconhecido
+      </Badge>
+    );
+  }
 
   return (
     <Badge variant={config.variant} className={config.className}>

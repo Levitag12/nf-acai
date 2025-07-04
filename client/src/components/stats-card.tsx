@@ -5,7 +5,8 @@ interface StatsCardProps {
   title: string;
   value: number;
   icon: LucideIcon;
-  color: "blue" | "green" | "orange" | "purple";
+  // 1. Adicionado "slate" como uma cor válida
+  color: "blue" | "green" | "orange" | "purple" | "slate";
   loading?: boolean;
 }
 
@@ -15,6 +16,8 @@ export default function StatsCard({ title, value, icon: Icon, color, loading }: 
     green: "bg-green-500", 
     orange: "bg-orange-500",
     purple: "bg-purple-500",
+    // 2. Adicionada a classe de cor para "slate"
+    slate: "bg-slate-500",
   };
 
   if (loading) {

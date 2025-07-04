@@ -3,7 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
-import { insertDocumentSchema, insertAttachmentSchema } from "@shared/schema";
+import { insertDocumentSchema, insertAttachmentSchema, documentStatusEnum } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 // import { put } from "@vercel/blob";
@@ -59,14 +59,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { id } = req.params;
       const document = await storage.getDocumentById(id);
-      
+
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
 
       // Check if user has access to this document
       const user = req.user;
-      
+
       if (user.role !== "ADMIN" && document.consultantId !== user.id) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -81,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/documents", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
       const user = req.user;
-      
+
       if (user.role !== "ADMIN") {
         return res.status(403).json({ message: "Only admins can create documents" });
       }
@@ -114,7 +114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileName = `${Date.now()}-${file.originalname}`;
       const filePath = join(uploadsDir, fileName);
       writeFileSync(filePath, file.buffer);
-      
+
       const fileUrl = `/uploads/${fileName}`;
 
       // Create initial attachment
@@ -132,38 +132,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // --- ROTA DE STATUS ATUALIZADA ---
   app.patch("/api/documents/:id/status", isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const { status } = req.body;
       const user = req.user;
-      
+
+      // Validar se o status enviado é um dos valores permitidos no enum
+      if (!documentStatusEnum.enumValues.includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+
       const document = await storage.getDocumentById(id);
       if (!document) {
         return res.status(404).json({ message: "Document not found" });
       }
-      
-      // Check permissions and valid status transitions
+
+      // Lógica de permissões
+      let canUpdate = false;
       if (user.role === "ADMIN") {
-        // Admin can confirm return received (RETURN_SENT -> COMPLETED)
-        if (status === "COMPLETED" && document.status === "RETURN_SENT") {
-          const updatedDocument = await storage.updateDocumentStatus(id, status);
-          return res.json(updatedDocument);
+        // Admin pode confirmar retorno ou arquivar
+        if (
+          (status === "COMPLETED" && document.status === "RETURN_SENT") ||
+          (status === "ARCHIVED")
+        ) {
+          canUpdate = true;
         }
       } else if (user.role === "CONSULTANT" && document.consultantId === user.id) {
-        // Consultant can confirm receipt (DELIVERED -> RECEIPT_CONFIRMED)
+        // Consultor pode confirmar recebimento
         if (status === "RECEIPT_CONFIRMED" && document.status === "DELIVERED") {
-          const updatedDocument = await storage.updateDocumentStatus(id, status);
-          return res.json(updatedDocument);
+          canUpdate = true;
         }
       }
 
-      res.status(400).json({ message: "Invalid status transition" });
+      if (canUpdate) {
+        const updatedDocument = await storage.updateDocumentStatus(id, status);
+        return res.json(updatedDocument);
+      }
+
+      res.status(403).json({ message: "Invalid status transition or permission denied" });
     } catch (error) {
       console.error("Error updating document status:", error);
       res.status(500).json({ message: "Failed to update document status" });
     }
   });
+
+  // --- NOVA ROTA DE EXCLUSÃO ---
+  app.delete("/api/documents/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const user = req.user;
+
+      // Apenas administradores podem excluir documentos
+      if (user.role !== "ADMIN") {
+        return res.status(403).json({ message: "Permission denied" });
+      }
+
+      await storage.deleteDocument(id);
+
+      res.status(200).json({ message: "Document deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting document:", error);
+      res.status(500).json({ message: "Failed to delete document" });
+    }
+  });
+
 
   app.post("/api/documents/:id/return", isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
@@ -197,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const fileName = `${Date.now()}-${file.originalname}`;
       const filePath = join(uploadsDir, fileName);
       writeFileSync(filePath, file.buffer);
-      
+
       const fileUrl = `/uploads/${fileName}`;
 
       // Create return attachment
@@ -222,7 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/consultants", isAuthenticated, async (req: any, res) => {
     try {
       const user = req.user;
-      
+
       if (user.role !== "ADMIN") {
         return res.status(403).json({ message: "Only admins can view consultants" });
       }
@@ -236,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stats endpoint
+  // --- ROTA DE ESTATÍSTICAS ATUALIZADA ---
   app.get("/api/stats", isAuthenticated, async (req: any, res) => {
     try {
       const user = req.user;
@@ -253,6 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         receiptConfirmed: documents.filter(d => d.status === "RECEIPT_CONFIRMED").length,
         returnSent: documents.filter(d => d.status === "RETURN_SENT").length,
         completed: documents.filter(d => d.status === "COMPLETED").length,
+        archived: documents.filter(d => d.status === "ARCHIVED").length, // <-- Adicionado
         total: documents.length,
       };
 

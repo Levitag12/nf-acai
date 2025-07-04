@@ -11,7 +11,17 @@ import CreateDocumentModal from "@/components/create-document-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Truck, CheckCircle, Reply, CheckCheck } from "lucide-react";
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
+import { Plus, Search, Truck, CheckCircle, Reply, CheckCheck, Archive } from "lucide-react";
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -19,8 +29,8 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
-  // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
@@ -79,9 +89,54 @@ export default function AdminDashboard() {
     },
   });
 
+  const archiveMutation = useMutation({
+    mutationFn: (documentId: string) => 
+      apiRequest("PATCH", `/api/documents/${documentId}/status`, { status: "ARCHIVED" }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      toast({
+        title: "Sucesso",
+        description: "Documento arquivado.",
+        variant: "default",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Falha ao arquivar o documento.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (documentId: string) => 
+      apiRequest("DELETE", `/api/documents/${documentId}`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
+      toast({
+        title: "Sucesso",
+        description: "Documento excluído permanentemente.",
+        variant: "default",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Falha ao excluir o documento.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setDeleteTargetId(null);
+    }
+  });
+
   const filteredDocuments = documents?.filter((doc: any) => {
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         doc.consultant.name?.toLowerCase().includes(searchTerm.toLowerCase());
+                          doc.consultant.name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = !statusFilter || doc.status === statusFilter;
     return matchesSearch && matchesStatus;
   }) || [];
@@ -92,6 +147,7 @@ export default function AdminDashboard() {
     { label: "Aguardando Retorno", value: "RECEIPT_CONFIRMED", color: "green" },
     { label: "Retornos para Verificar", value: "RETURN_SENT", color: "orange" },
     { label: "Concluídos", value: "COMPLETED", color: "purple" },
+    { label: "Arquivados", value: "ARCHIVED", color: "slate", icon: Archive },
   ];
 
   if (isLoading || !isAuthenticated) {
@@ -105,10 +161,9 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
-          {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900">Painel Administrativo</h1>
@@ -125,8 +180,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* AQUI ESTÁ A SEÇÃO DOS CARDS DE ESTATÍSTICAS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <StatsCard
               title="Entregue"
               value={stats?.delivered || 0}
@@ -155,9 +210,16 @@ export default function AdminDashboard() {
               color="purple"
               loading={statsLoading}
             />
+            {/* ESTE É O CARD QUE FOI CORRIGIDO */}
+            <StatsCard
+              title="Arquivado"
+              value={stats?.archived || 0}
+              icon={Archive} 
+              color="slate"
+              loading={statsLoading}
+            />
           </div>
 
-          {/* Filter Buttons */}
           <Card>
             <CardContent className="p-4">
               <div className="flex flex-wrap gap-2">
@@ -171,14 +233,13 @@ export default function AdminDashboard() {
                       `bg-${filter.color}-500 hover:bg-${filter.color}-600` : ""
                     }
                   >
+                    {filter.icon && <filter.icon className="w-4 h-4 mr-2" />}
                     {filter.label}
                   </Button>
                 ))}
               </div>
             </CardContent>
           </Card>
-
-          {/* Documents Table */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -201,6 +262,8 @@ export default function AdminDashboard() {
                 isAdmin={true}
                 onConfirmReturn={(id) => confirmReturnMutation.mutate(id)}
                 confirmingReturn={confirmReturnMutation.isPending}
+                onArchive={(id) => archiveMutation.mutate(id)}
+                onDelete={(id) => setDeleteTargetId(id)}
               />
             </CardContent>
           </Card>
@@ -211,6 +274,27 @@ export default function AdminDashboard() {
         open={showCreateModal}
         onOpenChange={setShowCreateModal}
       />
+
+      <AlertDialog open={!!deleteTargetId} onOpenChange={() => setDeleteTargetId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Isso excluirá permanentemente o documento e todos os seus anexos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deleteTargetId && deleteMutation.mutate(deleteTargetId)}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

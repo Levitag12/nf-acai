@@ -136,7 +136,7 @@ export default function Login() {
           <div className="mt-6 space-y-2 text-sm text-gray-600">
             <p className="text-center">Feito por Welington Lima</p>
             <div className="bg-gray-50 p-3 rounded-md space-y-1">
-              <p className="text-center"><strong>Sistema inteligente para gestão de notas fiscais e pedidos da unidade Açailândia – Safra 2025/2026</strong></p>
+              <p className="text-center"><strong>Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026</strong></p>
             </div>
           </div>
         </CardContent>

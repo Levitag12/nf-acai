@@ -9,6 +9,7 @@ import {
   type Document,
   type Attachment,
   type DocumentWithConsultant,
+  documentStatusEnum, // Importar o enum de status
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, desc } from "drizzle-orm";
@@ -20,14 +21,17 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getAllConsultants(): Promise<User[]>;
   createUser(userData: UpsertUser): Promise<User>;
-  
+
   // Document operations
   createDocument(document: InsertDocument): Promise<Document>;
   getDocumentById(id: string): Promise<DocumentWithConsultant | undefined>;
   getDocumentsByConsultant(consultantId: string): Promise<DocumentWithConsultant[]>;
   getAllDocuments(): Promise<DocumentWithConsultant[]>;
-  updateDocumentStatus(id: string, status: "DELIVERED" | "RECEIPT_CONFIRMED" | "RETURN_SENT" | "COMPLETED"): Promise<Document>;
-  
+  // 1. Assinatura do método atualizada para incluir ARCHIVED
+  updateDocumentStatus(id: string, status: typeof documentStatusEnum.enumValues[number]): Promise<Document>;
+  // 2. Adicionada a assinatura do novo método de exclusão
+  deleteDocument(id: string): Promise<void>;
+
   // Attachment operations
   createAttachment(attachment: InsertAttachment): Promise<Attachment>;
   getAttachmentsByDocument(documentId: string): Promise<Attachment[]>;
@@ -40,8 +44,6 @@ export class DatabaseStorage implements IStorage {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
-
-
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.email, email));
@@ -115,13 +117,19 @@ export class DatabaseStorage implements IStorage {
     return this.groupDocumentsWithRelations(result);
   }
 
-  async updateDocumentStatus(id: string, status: "DELIVERED" | "RECEIPT_CONFIRMED" | "RETURN_SENT" | "COMPLETED"): Promise<Document> {
+  // 3. Implementação do método atualizada
+  async updateDocumentStatus(id: string, status: typeof documentStatusEnum.enumValues[number]): Promise<Document> {
     const [updatedDocument] = await db
       .update(documents)
       .set({ status, updatedAt: new Date() })
       .where(eq(documents.id, id))
       .returning();
     return updatedDocument;
+  }
+
+  // 4. Implementação do novo método de exclusão
+  async deleteDocument(id: string): Promise<void> {
+    await db.delete(documents).where(eq(documents.id, id));
   }
 
   // Attachment operations

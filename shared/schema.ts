@@ -32,7 +32,8 @@ export const documentStatusEnum = pgEnum("document_status", [
   "DELIVERED",
   "RECEIPT_CONFIRMED", 
   "RETURN_SENT",
-  "COMPLETED"
+  "COMPLETED",
+  "ARCHIVED" // <-- Adicionado
 ]);
 
 // Attachment type enum
@@ -54,7 +55,7 @@ export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   status: documentStatusEnum("status").default("DELIVERED").notNull(),
-  consultantId: varchar("consultant_id").references(() => users.id).notNull(),
+  consultantId: varchar("consultant_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -62,7 +63,7 @@ export const documents = pgTable("documents", {
 // Attachments table
 export const attachments = pgTable("attachments", {
   id: uuid("id").primaryKey().defaultRandom(),
-  documentId: uuid("document_id").references(() => documents.id).notNull(),
+  documentId: uuid("document_id").references(() => documents.id, { onDelete: 'cascade' }).notNull(),
   fileName: text("file_name").notNull(),
   fileUrl: text("file_url").notNull(),
   attachmentType: attachmentTypeEnum("attachment_type").notNull(),

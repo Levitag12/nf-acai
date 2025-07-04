@@ -248,7 +248,7 @@ export default function ConsultantDashboard() {
                             {document.status === "RETURN_SENT" && (
                               <div className="text-sm text-gray-500 flex items-center">
                                 <Clock className="w-4 h-4 mr-1" />
-                                Aguardando confirmação do admin
+                                Aguardando confirmação de recebimento
                               </div>
                             )}
                             {document.status === "COMPLETED" && (

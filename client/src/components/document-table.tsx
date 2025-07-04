@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import StatusBadge from "./status-badge";
-import { FileText, FileCheck, FileX, MoreVertical } from "lucide-react";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { FileText, FileCheck, FileX, MoreVertical, Download, Archive, Trash2 } from "lucide-react";
 
 interface DocumentTableProps {
   documents: any[];
@@ -9,6 +14,8 @@ interface DocumentTableProps {
   isAdmin: boolean;
   onConfirmReturn?: (id: string) => void;
   confirmingReturn?: boolean;
+  onArchive?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export default function DocumentTable({ 
@@ -16,7 +23,9 @@ export default function DocumentTable({
   loading, 
   isAdmin, 
   onConfirmReturn,
-  confirmingReturn 
+  confirmingReturn,
+  onArchive,
+  onDelete,
 }: DocumentTableProps) {
   const getDocumentIcon = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
@@ -65,6 +74,9 @@ export default function DocumentTable({
               Status
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Anexos
+            </th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Criado em
             </th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -78,7 +90,8 @@ export default function DocumentTable({
         <tbody className="bg-white divide-y divide-gray-200">
           {documents.map((document) => {
             const initialAttachment = document.attachments?.find((a: any) => a.attachmentType === "INITIAL");
-            
+            const returnAttachment = document.attachments?.find((a: any) => a.attachmentType === "RETURN");
+
             return (
               <tr key={document.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -103,6 +116,34 @@ export default function DocumentTable({
                 <td className="px-6 py-4 whitespace-nowrap">
                   <StatusBadge status={document.status} />
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
+                  <div className="flex flex-col space-y-2">
+                    {initialAttachment && (
+                      <a
+                        href={initialAttachment.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-flex items-center text-primary hover:underline"
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Baixar Inicial
+                      </a>
+                    )}
+                    {returnAttachment && (
+                      <a
+                        href={returnAttachment.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="inline-flex items-center text-green-600 hover:underline"
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Baixar Retorno
+                      </a>
+                    )}
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(document.createdAt).toLocaleDateString('pt-BR')}
                 </td>
@@ -110,19 +151,38 @@ export default function DocumentTable({
                   {new Date(document.updatedAt).toLocaleDateString('pt-BR')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {isAdmin && document.status === "RETURN_SENT" && (
-                    <Button
-                      variant="link"
-                      onClick={() => onConfirmReturn?.(document.id)}
-                      disabled={confirmingReturn}
-                      className="text-primary hover:text-primary/90 mr-3"
-                    >
-                      Confirmar Recebimento
-                    </Button>
-                  )}
-                  <Button variant="ghost" size="sm">
-                    <MoreVertical className="h-4 w-4 text-gray-400" />
-                  </Button>
+                  <div className="flex items-center justify-end space-x-2">
+                    {isAdmin && document.status === "RETURN_SENT" && (
+                      <Button
+                        variant="link"
+                        onClick={() => onConfirmReturn?.(document.id)}
+                        disabled={confirmingReturn}
+                        className="text-primary hover:text-primary/90"
+                      >
+                        Confirmar
+                      </Button>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4 text-gray-400" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onArchive?.(document.id)}>
+                          <Archive className="mr-2 h-4 w-4" />
+                          <span>Arquivar</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="text-red-600 focus:text-red-600"
+                          onClick={() => onDelete?.(document.id)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Excluir</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </td>
               </tr>
             );
