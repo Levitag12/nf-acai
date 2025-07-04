@@ -40,7 +40,7 @@ export default function Navbar() {
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                   <FileText className="text-white text-sm" />
                 </div>
-                <span className="ml-3 text-xl font-semibold text-gray-900">DocumentFlow</span>
+                <span className="ml-3 text-xl font-semibold text-gray-900">SmartDoc</span>
               </div>
             </div>
           </div>

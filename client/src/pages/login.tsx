@@ -12,8 +12,9 @@ import { Loader2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
+// 1. Esquema de validação alterado para "username"
 const loginSchema = z.object({
-  email: z.string().email("Digite um email válido"),
+  username: z.string().min(1, "Digite seu usuário"),
   password: z.string().min(1, "Digite sua senha"),
 });
 
@@ -25,8 +26,9 @@ export default function Login() {
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
+    // 2. Valores padrão atualizados
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
   });
@@ -40,12 +42,12 @@ export default function Login() {
         },
         body: JSON.stringify(data),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || "Erro ao fazer login");
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -54,7 +56,7 @@ export default function Login() {
       window.location.reload(); // Force reload to update auth state
     },
     onError: (err: any) => {
-      setError(err.message || "Erro ao fazer login");
+      setError(err.message || "Usuário ou senha inválidos");
     },
   });
 
@@ -68,26 +70,27 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">
-            Sistema de Documentos
+            Gestão de Documentos Fiscais e Pedidos
           </CardTitle>
           <CardDescription className="text-center">
-            Entre com suas credenciais para acessar o sistema
+            Entre com seu login para acessar o sistema
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* 3. Bloco do campo de login totalmente atualizado */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Usuário</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="seu.email@company.com"
-                {...form.register("email")}
-                className={form.formState.errors.email ? "border-red-500" : ""}
+                id="username"
+                type="text"
+                placeholder="Digite seu usuário"
+                {...form.register("username")}
+                className={form.formState.errors.username ? "border-red-500" : ""}
               />
-              {form.formState.errors.email && (
+              {form.formState.errors.username && (
                 <p className="text-sm text-red-500">
-                  {form.formState.errors.email.message}
+                  {form.formState.errors.username.message}
                 </p>
               )}
             </div>
@@ -131,10 +134,9 @@ export default function Login() {
           </form>
 
           <div className="mt-6 space-y-2 text-sm text-gray-600">
-            <p className="font-semibold">Credenciais de teste:</p>
+            <p className="text-center">Feito por Welington Lima</p>
             <div className="bg-gray-50 p-3 rounded-md space-y-1">
-              <p><strong>Admin:</strong> admin@company.com | g147g147g147</p>
-              <p><strong>Consultor:</strong> sergio.bandeira@company.com | 123</p>
+              <p className="text-center"><strong>Sistema inteligente para gestão de notas fiscais e pedidos da unidade Açailândia – Safra 2025/2026</strong></p>
             </div>
           </div>
         </CardContent>

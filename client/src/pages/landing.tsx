@@ -15,7 +15,7 @@ export default function Landing() {
                   <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                     <FileText className="text-white text-sm" />
                   </div>
-                  <span className="ml-3 text-xl font-semibold text-gray-900">DocumentFlow</span>
+                  <span className="ml-3 text-xl font-semibold text-gray-900"><h1>SmartDoc – Controle de Notas e Pedidos | Açailândia 2025</h1></span>
                 </div>
               </div>
             </div>
