@@ -1,38 +1,42 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
-import cors from "cors"; // Importar o pacote CORS
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import { fileURLToPath } from 'url';
 
 const app = express();
 
-// --- CONFIGURAÇÃO DE CORS ROBUSTA ---
-// Isto permite que o seu site no Render e o seu ambiente de desenvolvimento
-// local façam pedidos para esta API.
+// Configuração de CORS para permitir pedidos do seu frontend
 const allowedOrigins = [
-  'https://taskmaster-1-9how.onrender.com',
+  'https://nf-acailandia.onrender.com', // O seu frontend principal
+  'https://taskmaster-1-9how.onrender.com', // O seu frontend secundário
   'http://localhost:5173' // Para desenvolvimento local
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
-    // Permite pedidos sem 'origin' (como apps mobile ou Postman) ou se a origem estiver na lista
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true, // Permite que cookies (para a sessão) sejam enviados
+  credentials: true,
 };
 app.use(cors(corsOptions));
-// ------------------------------------
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// ... (o resto do ficheiro permanece o mesmo) ...
+// Middleware de log (sem alterações)
+app.use((req, res, next) => {
+  const start = Date.now();
+  const reqPath = req.path;
+  // ... (resto do middleware de log)
+  next();
+});
+
 
 (async () => {
   const server = await registerRoutes(app);
@@ -44,17 +48,14 @@ app.use(express.urlencoded({ extended: false }));
     throw err;
   });
 
-  if (process.env.NODE_ENV === "production") {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const publicPath = path.join(__dirname, 'public');
-    app.use(express.static(publicPath));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(publicPath, "index.html"));
-    });
-  } else {
+  // --- LÓGICA DE SERVIR FICHEIROS REMOVIDA ---
+  // Em produção, o backend não serve mais o frontend.
+  // Apenas em desenvolvimento usamos o Vite.
+  if (process.env.NODE_ENV !== "production") {
     await setupVite(app, server);
   }
 
+  // Inicia o servidor
   const port = 5000;
   server.listen({
     port,
