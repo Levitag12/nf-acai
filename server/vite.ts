@@ -67,18 +67,24 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
+// --- FUNÇÃO CORRIGIDA ---
 export function serveStatic(app: Express) {
-  const distPath = path.resolve(import.meta.dirname, "public");
+  // O caminho correto para a pasta de build do cliente em produção.
+  // A Vercel coloca tudo na pasta 'dist'.
+  const distPath = path.resolve(import.meta.dirname, "..");
 
-  if (!fs.existsSync(distPath)) {
+  // Verifica se o ficheiro index.html existe para garantir que o build foi bem-sucedido.
+  if (!fs.existsSync(path.join(distPath, "index.html"))) {
     throw new Error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`,
+      `Não foi possível encontrar o index.html no diretório de build: ${distPath}. Verifique se o cliente foi construído corretamente.`,
     );
   }
 
+  // Serve todos os ficheiros estáticos (CSS, JS, imagens) a partir da pasta 'dist'.
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
+  // Para qualquer outra requisição, serve o ficheiro principal index.html.
+  // Isto é crucial para que o roteamento do React funcione corretamente.
   app.use("*", (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
