@@ -8,26 +8,31 @@ import { fileURLToPath } from 'url';
 const app = express();
 
 // --- CONFIGURAÇÃO DE CORS FINAL E ROBUSTA ---
-// Caminhos corrigidos para refletir exatamente os seus serviços no Render
+// Lista explícita de todos os seus possíveis endereços de frontend
 const allowedOrigins = [
-  'https://taskmaster-1-9how.onrender.com', // O seu frontend
-  'https://taskmaster-tnzt.onrender.com',   // O seu backend/API
+  'https://taskmaster-1-9how.onrender.com', // O seu frontend no Render
   'http://localhost:5173'                   // Para desenvolvimento local
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    // Permite pedidos se a origem estiver na lista ou se não houver origem (ex: Postman)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error('Origem não permitida pelo CORS'));
     }
   },
-  credentials: true, // Permite o envio de cookies de sessão
-  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'], // Permite todos os métodos necessários
-  allowedHeaders: ['Content-Type', 'Authorization'], // Permite os cabeçalhos necessários
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// 1. Lida explicitamente com os pedidos de verificação (pre-flight) OPTIONS.
+// Esta é a parte que estava em falta e que é crucial.
+app.options('*', cors(corsOptions));
+
+// 2. Aplica a configuração de CORS a todos os outros pedidos.
+app.use(cors(corsOptions));
 // ------------------------------------
 
 app.use(express.json());
@@ -40,6 +45,7 @@ app.use((req, res, next) => {
   // ... (resto do middleware de log)
   next();
 });
+
 
 (async () => {
   const server = await registerRoutes(app);
