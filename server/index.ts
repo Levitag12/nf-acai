@@ -1,5 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
-import path from "path"; // Importar o módulo 'path'
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 
@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: false }));
 // Middleware de log (sem alterações)
 app.use((req, res, next) => {
   const start = Date.now();
-  const path = req.path;
+  const reqPath = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
   const originalResJson = res.json;
@@ -21,8 +21,8 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+    if (reqPath.startsWith("/api")) {
+      let logLine = `${req.method} ${reqPath} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
@@ -49,28 +49,25 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // --- LÓGICA DE SERVIR FICHEIROS ATUALIZADA ---
-  // Verifica explicitamente se está em ambiente de produção
+  // Lógica para servir os ficheiros estáticos em produção
   if (process.env.NODE_ENV === "production") {
-    // 1. Encontra o caminho para a pasta 'dist' do cliente
-    // A partir do ficheiro atual (que estará em 'dist/'), sobe um nível e entra em 'client/dist'
-    const __dirname = path.dirname(new URL(import.meta.url).pathname);
-    const clientDistPath = path.resolve(__dirname, '..', 'client', 'dist');
+    // O process.cwd() é o caminho mais fiável para a raiz do projeto na Vercel.
+    const clientDistPath = path.resolve(process.cwd(), 'client/dist');
 
-    // 2. Serve os ficheiros estáticos (JS, CSS) dessa pasta
+    // Serve os ficheiros estáticos (JS, CSS, etc.) a partir da pasta de build do cliente.
     app.use(express.static(clientDistPath));
 
-    // 3. Para qualquer outra rota, envia o ficheiro principal 'index.html'
-    // Isto permite que o roteamento do React funcione
+    // Para qualquer outra rota não encontrada, envia o ficheiro principal index.html.
+    // Isto é crucial para que o roteamento do React (wouter) funcione.
     app.get("*", (_req, res) => {
       res.sendFile(path.join(clientDistPath, "index.html"));
     });
   } else {
-    // Em desenvolvimento, usa o Vite como antes
+    // Em desenvolvimento, usa o Vite para recarregamento rápido.
     await setupVite(app, server);
   }
 
-  // Inicia o servidor (sem alterações)
+  // Inicia o servidor
   const port = 5000;
   server.listen({
     port,
