@@ -1,11 +1,17 @@
 import type { Config } from "tailwindcss";
+import path from "path"; // Importar o módulo 'path' do Node.js
 
 export default {
   darkMode: ["class"],
-  // --- CAMINHOS CORRIGIDOS AQUI ---
-  // Removemos o prefixo "./client/" para que os caminhos sejam corretos
-  // quando o processo de build é executado a partir da pasta 'client'.
-  content: ["./index.html", "./src/**/*.{js,jsx,ts,tsx}"],
+
+  // --- CAMINHOS CORRIGIDOS COM 'path.resolve' ---
+  // Esta abordagem cria caminhos absolutos, eliminando qualquer confusão
+  // sobre a localização dos ficheiros durante o processo de build no Render.
+  content: [
+    path.resolve(__dirname, "client", "index.html"),
+    path.resolve(__dirname, "client", "src/**/*.{js,jsx,ts,tsx}"),
+  ],
+
   theme: {
     extend: {
       borderRadius: {
