@@ -46,13 +46,11 @@ export async function setupVite(app: Express, server: Server) {
 
     try {
       const clientTemplate = path.resolve(
-        import.meta.dirname,
-        "..",
+        process.cwd(), // Usar process.cwd() para o caminho correto
         "client",
         "index.html",
       );
 
-      // always reload the index.html file from disk incase it changes
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
@@ -67,25 +65,33 @@ export async function setupVite(app: Express, server: Server) {
   });
 }
 
-// --- FUNÇÃO CORRIGIDA ---
+// --- FUNÇÃO CORRIGIDA E ROBUSTA PARA PRODUÇÃO ---
 export function serveStatic(app: Express) {
-  // O caminho correto para a pasta de build do cliente em produção.
-  // A Vercel coloca tudo na pasta 'dist'.
-  const distPath = path.resolve(import.meta.dirname, "..");
+  // Na Vercel, process.cwd() aponta para a raiz do projeto.
+  // O build do cliente (Vite) gera os ficheiros na pasta 'client/dist'.
+  const clientDistPath = path.resolve(process.cwd(), "client", "dist");
 
-  // Verifica se o ficheiro index.html existe para garantir que o build foi bem-sucedido.
-  if (!fs.existsSync(path.join(distPath, "index.html"))) {
-    throw new Error(
-      `Não foi possível encontrar o index.html no diretório de build: ${distPath}. Verifique se o cliente foi construído corretamente.`,
-    );
+  // Verifica se a pasta de build do cliente realmente existe.
+  if (!fs.existsSync(clientDistPath)) {
+    const errorMessage = `Diretório de build do cliente não encontrado em: ${clientDistPath}.`;
+    console.error(errorMessage);
+    // Envia uma resposta de erro clara no navegador
+    app.use('*', (_req, res) => {
+      res.status(500).send(`
+        <h1>Erro de Configuração do Servidor</h1>
+        <p>${errorMessage}</p>
+        <p>Verifique os logs de build na Vercel.</p>
+      `);
+    });
+    return;
   }
 
-  // Serve todos os ficheiros estáticos (CSS, JS, imagens) a partir da pasta 'dist'.
-  app.use(express.static(distPath));
+  // 1. Serve os ficheiros estáticos (JS, CSS, imagens) a partir da pasta de build do cliente.
+  app.use(express.static(clientDistPath));
 
-  // Para qualquer outra requisição, serve o ficheiro principal index.html.
-  // Isto é crucial para que o roteamento do React funcione corretamente.
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // 2. Para qualquer outra rota não encontrada, envia o ficheiro principal index.html.
+  // Isto é crucial para que o roteamento do React (wouter) funcione.
+  app.get("*", (_req, res) => {
+    res.sendFile(path.resolve(clientDistPath, "index.html"));
   });
 }
