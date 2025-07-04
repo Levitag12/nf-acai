@@ -1,5 +1,10 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// 1. Define a URL base da sua API a partir da variável de ambiente.
+// Em produção (no Render), isto será "https://taskmaster-tnzt.onrender.com".
+// Em desenvolvimento, será uma string vazia, e os pedidos continuarão a funcionar localmente.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
@@ -12,7 +17,10 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
+  // 2. Adiciona a URL base a todos os pedidos da API.
+  const fullUrl = `${API_BASE_URL}${url}`;
+
+  const res = await fetch(fullUrl, {
     method,
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
@@ -29,7 +37,10 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // 3. Adiciona a URL base a todos os pedidos de query.
+    const fullUrl = `${API_BASE_URL}${queryKey[0] as string}`;
+
+    const res = await fetch(fullUrl, {
       credentials: "include",
     });
 
