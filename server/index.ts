@@ -1,30 +1,33 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
-import cors from "cors";
+import cors from "cors"; // Importar o pacote CORS
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import { fileURLToPath } from 'url';
 
 const app = express();
 
-// Configuração de CORS para permitir pedidos do seu frontend
+// --- CONFIGURAÇÃO DE CORS FINAL E ROBUSTA ---
+// Lista explícita de todos os seus possíveis endereços de frontend
 const allowedOrigins = [
-  'https://nf-acailandia.onrender.com', // O seu frontend principal
-  'https://taskmaster-1-9how.onrender.com', // O seu frontend secundário
-  'http://localhost:5173' // Para desenvolvimento local
+  'https://taskmaster-1-9how.onrender.com', // O seu frontend principal
+  'https://nf-acailandia.onrender.com',     // Um nome alternativo que você usou
+  'http://localhost:5173'                   // Para desenvolvimento local
 ];
 
 const corsOptions = {
   origin: function (origin, callback) {
+    // Permite pedidos se a origem estiver na lista ou se não houver origem (ex: Postman)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Origem não permitida pelo CORS'));
     }
   },
-  credentials: true,
+  credentials: true, // Permite o envio de cookies de sessão
 };
 app.use(cors(corsOptions));
+// ------------------------------------
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -37,7 +40,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
 (async () => {
   const server = await registerRoutes(app);
 
@@ -48,8 +50,7 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // --- LÓGICA DE SERVIR FICHEIROS REMOVIDA ---
-  // Em produção, o backend não serve mais o frontend.
+  // Em produção, o backend não serve o frontend.
   // Apenas em desenvolvimento usamos o Vite.
   if (process.env.NODE_ENV !== "production") {
     await setupVite(app, server);
