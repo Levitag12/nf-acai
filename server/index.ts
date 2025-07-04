@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
-import cors from "cors"; // Importar o pacote CORS
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
 import { fileURLToPath } from 'url';
@@ -8,14 +8,14 @@ import { fileURLToPath } from 'url';
 const app = express();
 
 // --- CONFIGURAÇÃO DE CORS FINAL E ROBUSTA ---
-// Lista explícita de todos os seus possíveis endereços de frontend
+// Caminhos corrigidos para refletir exatamente os seus serviços no Render
 const allowedOrigins = [
-  'https://taskmaster-1-9how.onrender.com', // O seu frontend principal
-  'https://nf-acailandia.onrender.com',     // Um nome alternativo que você usou
+  'https://taskmaster-1-9how.onrender.com', // O seu frontend
+  'https://taskmaster-tnzt.onrender.com',   // O seu backend/API
   'http://localhost:5173'                   // Para desenvolvimento local
 ];
 
-const corsOptions = {
+app.use(cors({
   origin: function (origin, callback) {
     // Permite pedidos se a origem estiver na lista ou se não houver origem (ex: Postman)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
@@ -25,8 +25,9 @@ const corsOptions = {
     }
   },
   credentials: true, // Permite o envio de cookies de sessão
-};
-app.use(cors(corsOptions));
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'], // Permite todos os métodos necessários
+  allowedHeaders: ['Content-Type', 'Authorization'], // Permite os cabeçalhos necessários
+}));
 // ------------------------------------
 
 app.use(express.json());
@@ -51,7 +52,6 @@ app.use((req, res, next) => {
   });
 
   // Em produção, o backend não serve o frontend.
-  // Apenas em desenvolvimento usamos o Vite.
   if (process.env.NODE_ENV !== "production") {
     await setupVite(app, server);
   }
