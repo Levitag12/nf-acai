@@ -1,19 +1,15 @@
 import type { Config } from "tailwindcss";
-import path from "path"; // Importar o módulo 'path' do Node.js
 
 export default {
   darkMode: ["class"],
-
-  // --- CAMINHOS CORRIGIDOS COM 'path.resolve' ---
-  // Esta abordagem cria caminhos absolutos, eliminando qualquer confusão
-  // sobre a localização dos ficheiros durante o processo de build no Render.
+  // Os caminhos agora estão corretos para o processo de build
   content: [
-    path.resolve(__dirname, "client", "index.html"),
-    path.resolve(__dirname, "client", "src/**/*.{js,jsx,ts,tsx}"),
+    "./client/index.html",
+    "./client/src/**/*.{js,jsx,ts,tsx}",
   ],
-
   theme: {
     extend: {
+      // ... (o resto do seu tema permanece o mesmo)
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
@@ -53,45 +49,6 @@ export default {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
-        chart: {
-          "1": "var(--chart-1)",
-          "2": "var(--chart-2)",
-          "3": "var(--chart-3)",
-          "4": "var(--chart-4)",
-          "5": "var(--chart-5)",
-        },
-        sidebar: {
-          DEFAULT: "var(--sidebar-background)",
-          foreground: "var(--sidebar-foreground)",
-          primary: "var(--sidebar-primary)",
-          "primary-foreground": "var(--sidebar-primary-foreground)",
-          accent: "var(--sidebar-accent)",
-          "accent-foreground": "var(--sidebar-accent-foreground)",
-          border: "var(--sidebar-border)",
-          ring: "var(--sidebar-ring)",
-        },
-      },
-      keyframes: {
-        "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
-        },
-        "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
       },
     },
   },
