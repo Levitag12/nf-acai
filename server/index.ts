@@ -1,10 +1,21 @@
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
+import cors from "cors"; // 1. Importar o pacote CORS
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
-import { fileURLToPath } from 'url'; // Importar utilitário para __dirname
+import { fileURLToPath } from 'url';
 
 const app = express();
+
+// 2. Configurar o CORS
+// Isto permite que o seu site (frontend) faça pedidos ao seu servidor (backend).
+const corsOptions = {
+  // Substitua pelo URL do seu frontend no Render se for diferente
+  origin: 'https://taskmaster-1-9how.onrender.com', 
+  credentials: true, // Permite que cookies (para a sessão) sejam enviados
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -52,15 +63,11 @@ app.use((req, res, next) => {
 
   // Lógica para servir os ficheiros estáticos em produção
   if (process.env.NODE_ENV === "production") {
-    // Em produção, o servidor corre a partir de 'dist/index.js'.
-    // O cliente é construído em 'dist/public/'.
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const publicPath = path.join(__dirname, 'public');
 
-    // Serve os ficheiros estáticos (JS, CSS, etc.) a partir da pasta 'dist/public'.
     app.use(express.static(publicPath));
 
-    // Para qualquer outra rota não encontrada, envia o ficheiro principal 'index.html'.
     app.get("*", (_req, res) => {
       res.sendFile(path.join(publicPath, "index.html"));
     });
