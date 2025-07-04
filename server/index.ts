@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, log } from "./vite";
+import { fileURLToPath } from 'url'; // Importar utilitário para __dirname
 
 const app = express();
 app.use(express.json());
@@ -51,16 +52,17 @@ app.use((req, res, next) => {
 
   // Lógica para servir os ficheiros estáticos em produção
   if (process.env.NODE_ENV === "production") {
-    // O process.cwd() é o caminho mais fiável para a raiz do projeto na Vercel.
-    const clientDistPath = path.resolve(process.cwd(), 'client/dist');
+    // Em produção, o servidor corre a partir de 'dist/index.js'.
+    // O cliente é construído em 'dist/public/'.
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const publicPath = path.join(__dirname, 'public');
 
-    // Serve os ficheiros estáticos (JS, CSS, etc.) a partir da pasta de build do cliente.
-    app.use(express.static(clientDistPath));
+    // Serve os ficheiros estáticos (JS, CSS, etc.) a partir da pasta 'dist/public'.
+    app.use(express.static(publicPath));
 
-    // Para qualquer outra rota não encontrada, envia o ficheiro principal index.html.
-    // Isto é crucial para que o roteamento do React (wouter) funcione.
+    // Para qualquer outra rota não encontrada, envia o ficheiro principal 'index.html'.
     app.get("*", (_req, res) => {
-      res.sendFile(path.join(clientDistPath, "index.html"));
+      res.sendFile(path.join(publicPath, "index.html"));
     });
   } else {
     // Em desenvolvimento, usa o Vite para recarregamento rápido.
