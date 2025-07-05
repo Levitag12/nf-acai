@@ -3,9 +3,9 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/", // Corrige problemas com rotas como /dashboard
+  base: "/", // ⚠️ importante para rotas funcionarem no Render
   build: {
-    outDir: "dist", // Garante que a build seja feita para /client/dist
+    outDir: "dist",
     emptyOutDir: true,
   },
 });
