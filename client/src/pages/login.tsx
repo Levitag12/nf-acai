@@ -44,23 +44,27 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-        credentials: "include", // 🔧 Garante envio do cookie de sessão
+        credentials: "include",
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Erro ao fazer login");
+        const text = await response.text();
+        try {
+          const error = JSON.parse(text);
+          throw new Error(error.message || "Erro ao fazer login");
+        } catch {
+          throw new Error("Erro ao fazer login");
+        }
       }
 
       return response.json();
     },
     onSuccess: () => {
-      setLocation("/");         // Redireciona para a página inicial
-      window.location.reload(); // Recarrega a página para atualizar o estado global
+      setLocation("/");
+      window.location.reload();
     },
-    onError: (err: unknown) => {
-      const message = err instanceof Error ? err.message : "Erro ao fazer login";
-      setError(message || "Usuário ou senha inválidos");
+    onError: (err: any) => {
+      setError(err.message || "Usuário ou senha inválidos");
     },
   });
 
@@ -139,10 +143,8 @@ export default function Login() {
           <div className="mt-6 space-y-2 text-sm text-gray-600">
             <p className="text-center">Feito por Welington Lima</p>
             <div className="bg-gray-50 p-3 rounded-md space-y-1">
-              <p className="text-center">
-                <strong>
-                  Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026
-                </strong>
+              <p className="text-center font-semibold">
+                Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026
               </p>
             </div>
           </div>
