@@ -1,12 +1,9 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import path from "path";
-
+import { fileURLToPath } from "url";
 import authRoutes from "./auth";
 import routes from "./routes";
-
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,16 +11,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Rotas da API
-app.use("/api", routes);
 app.use("/auth", authRoutes);
+app.use("/", routes);
 
-// Servir arquivos estáticos da build do Vite (frontend)
-app.use(express.static(path.join(__dirname, "..", "client", "dist")));
+// Serve o build do frontend (caso esteja em /client/dist)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, "../client/dist");
 
-// Redirecionar todas as outras rotas para o index.html (SPA React)
+app.use(express.static(clientDistPath));
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "client", "dist", "index.html"));
+  res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
 app.listen(PORT, () => {
