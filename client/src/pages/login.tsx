@@ -38,35 +38,31 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm) => {
-      const response = await fetch("/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+          credentials: "include",
+        });
 
-      const text = await response.text();
-
-      if (!response.ok) {
-        try {
-          const error = JSON.parse(text);
-          throw new Error(error.message || "Erro ao fazer login");
-        } catch {
-          throw new Error("Erro ao fazer login");
+        if (!response.ok) {
+          // Se a resposta não tiver body JSON, evita erro do .json()
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            const error = await response.json();
+            throw new Error(error.message || "Erro ao fazer login");
+          } else {
+            throw new Error("Erro ao fazer login");
+          }
         }
-      }
 
-      if (text) {
-        try {
-          return JSON.parse(text);
-        } catch {
-          return {};
-        }
+        return response.json();
+      } catch (err: any) {
+        throw new Error(err.message || "Erro ao fazer login");
       }
-
-      return {};
     },
     onSuccess: () => {
       setLocation("/");
