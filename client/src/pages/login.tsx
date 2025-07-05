@@ -9,10 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 import { useLocation } from "wouter";
 
-// 1. Esquema de validação alterado para "username"
 const loginSchema = z.object({
   username: z.string().min(1, "Digite seu usuário"),
   password: z.string().min(1, "Digite sua senha"),
@@ -26,7 +24,6 @@ export default function Login() {
 
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
-    // 2. Valores padrão atualizados
     defaultValues: {
       username: "",
       password: "",
@@ -43,17 +40,35 @@ export default function Login() {
         body: JSON.stringify(data),
       });
 
+      const contentType = response.headers.get("content-type");
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Erro ao fazer login");
+        let errorMessage = "Erro ao fazer login";
+
+        if (contentType && contentType.includes("application/json")) {
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch {
+            // Ignora erro de JSON inválido
+          }
+        } else {
+          const errorText = await response.text();
+          if (errorText) errorMessage = errorText;
+        }
+
+        throw new Error(errorMessage);
       }
 
-      return response.json();
+      if (contentType && contentType.includes("application/json")) {
+        return response.json();
+      } else {
+        return {}; // ou throw new Error("Resposta inesperada do servidor");
+      }
     },
     onSuccess: () => {
-      // Redirect to home page after successful login
       setLocation("/");
-      window.location.reload(); // Force reload to update auth state
+      window.location.reload();
     },
     onError: (err: any) => {
       setError(err.message || "Usuário ou senha inválidos");
@@ -78,7 +93,6 @@ export default function Login() {
         </CardHeader>
         <CardContent>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* 3. Bloco do campo de login totalmente atualizado */}
             <div className="space-y-2">
               <Label htmlFor="username">Usuário</Label>
               <Input
@@ -136,7 +150,9 @@ export default function Login() {
           <div className="mt-6 space-y-2 text-sm text-gray-600">
             <p className="text-center">Feito por Welington Lima</p>
             <div className="bg-gray-50 p-3 rounded-md space-y-1">
-              <p className="text-center"><strong>Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026</strong></p>
+              <p className="text-center">
+                <strong>Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026</strong>
+              </p>
             </div>
           </div>
         </CardContent>
