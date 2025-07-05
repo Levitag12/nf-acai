@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   base: "/",
   build: {
-    outDir: "dist",
+    outDir: "dist", // Esse "dist" já está correto SE o arquivo estiver dentro da pasta `client/`
     emptyOutDir: true,
   },
   resolve: {
