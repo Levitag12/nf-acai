@@ -6,7 +6,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { useLocation } from "wouter";
@@ -38,40 +44,23 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
+        credentials: "include", // 🔧 Garante envio do cookie de sessão
       });
 
-      const contentType = response.headers.get("content-type");
-
       if (!response.ok) {
-        let errorMessage = "Erro ao fazer login";
-
-        if (contentType && contentType.includes("application/json")) {
-          try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-          } catch {
-            // Ignora erro de JSON inválido
-          }
-        } else {
-          const errorText = await response.text();
-          if (errorText) errorMessage = errorText;
-        }
-
-        throw new Error(errorMessage);
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao fazer login");
       }
 
-      if (contentType && contentType.includes("application/json")) {
-        return response.json();
-      } else {
-        return {}; // ou throw new Error("Resposta inesperada do servidor");
-      }
+      return response.json();
     },
     onSuccess: () => {
-      setLocation("/");
-      window.location.reload();
+      setLocation("/");         // Redireciona para a página inicial
+      window.location.reload(); // Recarrega a página para atualizar o estado global
     },
-    onError: (err: any) => {
-      setError(err.message || "Usuário ou senha inválidos");
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Erro ao fazer login";
+      setError(message || "Usuário ou senha inválidos");
     },
   });
 
@@ -151,7 +140,9 @@ export default function Login() {
             <p className="text-center">Feito por Welington Lima</p>
             <div className="bg-gray-50 p-3 rounded-md space-y-1">
               <p className="text-center">
-                <strong>Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026</strong>
+                <strong>
+                  Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026
+                </strong>
               </p>
             </div>
           </div>
