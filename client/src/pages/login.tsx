@@ -47,8 +47,9 @@ export default function Login() {
         credentials: "include",
       });
 
+      const text = await response.text();
+
       if (!response.ok) {
-        const text = await response.text();
         try {
           const error = JSON.parse(text);
           throw new Error(error.message || "Erro ao fazer login");
@@ -57,7 +58,15 @@ export default function Login() {
         }
       }
 
-      return response.json();
+      if (text) {
+        try {
+          return JSON.parse(text);
+        } catch {
+          return {};
+        }
+      }
+
+      return {};
     },
     onSuccess: () => {
       setLocation("/");
@@ -143,8 +152,10 @@ export default function Login() {
           <div className="mt-6 space-y-2 text-sm text-gray-600">
             <p className="text-center">Feito por Welington Lima</p>
             <div className="bg-gray-50 p-3 rounded-md space-y-1">
-              <p className="text-center font-semibold">
-                Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026
+              <p className="text-center">
+                <strong>
+                  Sistema inteligente para gestão de notas fiscais e pedidos da unidade de Açailândia – Safra 2025/2026
+                </strong>
               </p>
             </div>
           </div>
