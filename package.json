@@ -9,8 +9,7 @@
     "start": "NODE_ENV=production node dist/index.js",
     "check": "tsc",
     "db:push": "drizzle-kit push",
-    "seed": "tsx scripts/seed.ts",
-    "postinstall": "cd client && npm install && npm run build"
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {},
   "devDependencies": {},
