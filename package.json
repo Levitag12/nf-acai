@@ -6,7 +6,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "tsx server/index.ts",
     "dev:client": "npm run dev --prefix client",
-    "build:client": "vite build",
+    "build:client": "npm run build --prefix client",
     "build:server": "esbuild server/index.ts --platform=node --bundle --format=esm --outdir=dist",
     "build": "./build.sh",
     "start": "node dist/index.js"
