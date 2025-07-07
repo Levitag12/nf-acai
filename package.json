@@ -12,12 +12,8 @@
     "seed": "tsx scripts/seed.ts",
     "postinstall": "cd client && npm install && npm run build && cd .. && npm run build"
   },
-  "dependencies": {
-    // (mantém os mesmos pacotes que você enviou, sem alterações)
-  },
-  "devDependencies": {
-    // (mantém os mesmos devDependencies que você já tem)
-  },
+  "dependencies": {},
+  "devDependencies": {},
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
   }
