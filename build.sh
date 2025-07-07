@@ -1,12 +1,16 @@
 #!/usr/bin/env bash
-# Build script para Render
+# Build completo para Render
 
-# 1. Instalar e buildar o frontend
+# 1. Instala e builda o frontend
 cd client
 npm install
 npm run build
 cd ..
 
-# 2. Instalar o backend
+# 2. Instala dependências do backend
 cd server
 npm install
+cd ..
+
+# 3. Builda o backend (gera dist/index.js com esbuild)
+npm run build
