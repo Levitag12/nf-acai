@@ -8,6 +8,7 @@
     "build": "npm --prefix client run build"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.81.5",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "tsx": "^4.19.1"
