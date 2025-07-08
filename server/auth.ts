@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { db } from "../db"; // Importa a conexão com o banco de dados
+// A correção está aqui: de "../db" para "./db"
+import { db } from "./db"; // Importa a conexão com o banco de dados
 import { users } from "@shared/schema"; // Importa a tabela de usuários do seu schema
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt"; // Importa o bcrypt para senhas
