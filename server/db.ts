@@ -8,12 +8,9 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-// Configura o Pool de conexões com a opção de SSL explícita
+// Conexão direta usando a URL interna, sem configuração extra de SSL
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
 });
 
 export const db = drizzle(pool, { schema });
