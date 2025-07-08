@@ -1,33 +1,46 @@
 import express from "express";
-import cors from "cors"; // 1. Importado o cors
+import cors from "cors";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // --- MIDDLEWARE ---
+// Garante que esta seção venha ANTES de todas as rotas.
 
-// 2. Adicionada a configuração do CORS para permitir requisições do seu frontend
+// Configuração do CORS para permitir requisições do seu frontend
 app.use(cors({
   origin: 'https://nf-acai-xbqk.onrender.com', // A URL do seu Static Site
   credentials: true
 }));
 
-// 3. Adicionado o parser de JSON para que o backend entenda os dados de login
+// Parser de JSON para entender os dados enviados no corpo da requisição
 app.use(express.json());
 
 
 // --- ROTAS DA API ---
 
+// Rota de teste
 app.get("/api/hello", (_, res) => {
   res.json({ message: "Hello from Express + Vite!" });
 });
 
-// Suas outras rotas da API (como a de login) virão aqui...
-// app.post('/api/login', ...);
+// Rota de Login (Exemplo Funcional)
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
 
+  console.log(`Tentativa de login recebida para o usuário: ${username}`);
 
-// 4. A parte de servir arquivos estáticos foi REMOVIDA.
-// Isso agora é responsabilidade do serviço "Static Site" na Render.
+  // Lógica de exemplo:
+  // Verifique se o usuário é "admin" e a senha é "password"
+  if (username === "admin" && password === "password") {
+    console.log(`Usuário ${username} autenticado com sucesso.`);
+    // Em um caso real, você geraria um token JWT ou uma sessão aqui
+    res.status(200).json({ message: "Login bem-sucedido!" });
+  } else {
+    console.log(`Falha na autenticação para o usuário: ${username}.`);
+    res.status(401).json({ message: "Usuário ou senha inválidos" });
+  }
+});
 
 
 // --- INICIALIZAÇÃO DO SERVIDOR ---
