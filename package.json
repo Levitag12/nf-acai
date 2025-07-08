@@ -4,16 +4,14 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "tsx server/index.ts"
-  },
-  "imports": {
-    "@shared/*": "./shared/*"
+    "start": "tsx -r tsconfig-paths/register server/index.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.32.0",
     "express": "^4.19.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.16.2"
   },
   "devDependencies": {
