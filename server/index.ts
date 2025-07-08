@@ -1,32 +1,28 @@
 import express from "express";
-import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv";
-dotenv.config();
+import routes from "./routes";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+
+// Middleware
 app.use(express.json());
 
-// Servir o build do frontend
+// Rotas da API
+app.use("/api", routes);
+
+// Servir arquivos estáticos do frontend
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const clientBuildPath = path.join(__dirname, "../client/dist");
-app.use(express.static(clientBuildPath));
+const staticPath = path.join(__dirname, "../client/dist");
 
-// API exemplo
-app.get("/api/hello", (req, res) => {
-  res.json({ message: "Hello from Express API!" });
-});
+app.use(express.static(staticPath));
 
-// SPA: serve index.html para rotas desconhecidas exceto API
-app.get("*", (req, res) => {
-  if (req.path.startsWith("/api")) return res.status(404).send("API route not found.");
-  res.sendFile(path.join(clientBuildPath, "index.html"));
+app.get("*", (_, res) => {
+  res.sendFile(path.join(staticPath, "index.html"));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
