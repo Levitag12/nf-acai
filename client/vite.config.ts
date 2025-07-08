@@ -4,14 +4,14 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/", // OK para uso em backend integrado
+  base: "/",
   build: {
-    outDir: "dist", // ✔️ está correto, será usado pelo Express
+    outDir: "dist",
     emptyOutDir: true,
   },
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"), // ✔️ bom para importações absolutas
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });
