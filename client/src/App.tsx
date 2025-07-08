@@ -16,3 +16,8 @@ function App() {
         <h1 className="text-2xl font-bold">Render Fullstack Deploy</h1>
         <p className="text-muted-foreground">{message}</p>
       </div>
+    </div> // <-- 1. div principal fechada
+  ); // <-- 2. Parêntese do return fechado
+} // <-- 3. Chave da função App fechada
+
+export default App; // <-- 4. Exportação do componente
