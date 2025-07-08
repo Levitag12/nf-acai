@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
+set -e  # Faz o script parar imediatamente se ocorrer qualquer erro
 
-# Instala as dependências do back-end
+echo "🔧 Instalando dependências do backend..."
 npm install
 
-# Instala as dependências do front-end
+echo "📁 Entrando na pasta client..."
 cd client
+
+echo "🔧 Instalando dependências do frontend..."
 npm install
 
-# Builda o front-end
+echo "⚙️ Buildando o frontend com Vite..."
 npm run build
 
-# Volta para a raiz
+echo "🔙 Voltando para a raiz do projeto..."
 cd ..
 
-# Agora sim, pode buildar o backend (se necessário)
+echo "✅ Build finalizado com sucesso."
