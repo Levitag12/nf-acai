@@ -6,12 +6,18 @@
   "scripts": {
     "start": "tsx server/index.ts"
   },
+  "imports": {
+    "@shared/*": "./shared/*"
+  },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.32.0",
     "express": "^4.19.2",
     "tsx": "^4.16.2"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "typescript": "^5.5.3"
   }
 }
