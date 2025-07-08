@@ -4,17 +4,14 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "start": "tsx server/index.ts",
-    "build": "npm --prefix client run build"
+    "start": "tsx server/index.ts"
   },
   "dependencies": {
-    "@tanstack/react-query": "^5.81.5",
     "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "tsx": "^4.19.1"
+    "express": "^4.19.2",
+    "tsx": "^4.16.2"
   },
   "devDependencies": {
-    "postcss-nesting": "^13.0.2",
-    "typescript": "5.6.3"
+    "typescript": "^5.5.3"
   }
 }
