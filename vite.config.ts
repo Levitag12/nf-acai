@@ -4,9 +4,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
-  base: "/",
+  base: "./", // ✅ Use "./" para funcionar corretamente ao servir via Express
   build: {
-    outDir: "dist",
+    outDir: "dist", // Vite irá gerar em client/dist
     emptyOutDir: true
   },
   resolve: {
