@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "tsx server/index.ts",
-    "build": "cd client && npm run build"
+    "build": "npm --prefix client run build"
   },
   "dependencies": {
     "express": "^4.21.2",
