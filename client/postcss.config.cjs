@@ -1,7 +1,7 @@
 // client/postcss.config.cjs
 module.exports = {
   plugins: {
-    'tailwindcss/nesting': {},
+    'postcss-nesting': {}, // <-- Corrigido aqui
     tailwindcss: {},
     autoprefixer: {},
   },
