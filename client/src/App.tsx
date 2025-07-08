@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import LoginPage from './pages/LoginPage.tsx'; // <-- A correção está aqui
+import LoginPage from './pages/login.tsx';
 
 function App() {
   return (
