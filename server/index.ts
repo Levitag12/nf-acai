@@ -1,8 +1,16 @@
 import express from "express";
 import cors from "cors";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Drizzle/DB imports
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { db, pool } from './db';
+
+// Suas rotas e lógica de seed
 import authRoutes from "./auth";
 import routes from "./routes";
-import { runSeed } from "./seed-logic"; // Importa a lógica do seed
+import { runSeed } from "./seed-logic";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,11 +26,39 @@ app.use(express.json());
 app.use("/api", authRoutes);
 app.use("/", routes);
 
+// --- ROTA SEGURA PARA MIGRATE ---
+app.get("/api/migrate", async (req, res) => {
+  const secret = req.query.secret;
+
+  if (secret !== process.env.SEED_SECRET) {
+    return res.status(403).json({ message: "Acesso negado." });
+  }
+
+  try {
+    console.log("Iniciando migração do banco de dados...");
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    // Caminho para a pasta de migrações na raiz do projeto
+    const migrationsFolder = path.join(__dirname, '../../drizzle');
+
+    console.log(`Lendo migrações da pasta: ${migrationsFolder}`);
+    await migrate(db, { migrationsFolder });
+
+    console.log("Migração concluída com sucesso!");
+
+    return res.status(200).json({ message: "Migração do banco de dados concluída com sucesso!" });
+  } catch (error: any) {
+    console.error("Erro ao executar a migração via endpoint:", error);
+    return res.status(500).json({ message: "Erro no servidor durante a migração.", error: error.message });
+  }
+});
+
 // --- ROTA SEGURA PARA O SEED ---
 app.get("/api/seed-database", async (req, res) => {
   const secret = req.query.secret;
 
-  // Verifica se o segredo enviado na URL é o mesmo das variáveis de ambiente
   if (secret !== process.env.SEED_SECRET) {
     return res.status(403).json({ message: "Acesso negado." });
   }

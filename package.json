@@ -5,10 +5,11 @@
   "license": "MIT",
   "scripts": {
     "start": "tsx -r tsconfig-paths/register server/index.ts",
-    "seed": "tsx -r tsconfig-paths/register scripts/seed.ts"
+    "seed": "tsx -r tsconfig-paths/register server/seed.ts",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^1.0.1",
+    "@neondatabase/serverless": "^0.9.4",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.32.0",
@@ -22,6 +23,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^4.17.21",
     "@types/pg": "^8.11.6",
+    "drizzle-kit": "^0.23.0",
     "typescript": "^5.5.3"
   }
 }
