@@ -6,41 +6,39 @@ interface LoginForm {
   password: string;
 }
 
+interface LoginResponse {
+  message: string;
+  role?: 'ADMIN' | 'CONSULTANT';
+}
+
 export default function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const loginMutation = useMutation({
-    mutationFn: async (data: LoginForm) => {
+    mutationFn: async (data: LoginForm): Promise<LoginResponse> => {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(data),
       });
 
+      const responseData = await response.json();
       if (!response.ok) {
-        let errorMessage = "Erro ao fazer login";
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
-        } catch {
-          // Erro ao fazer parsing do JSON (possivelmente resposta vazia)
-        }
-        throw new Error(errorMessage);
+        throw new Error(responseData.message || "Erro ao fazer login");
       }
-
-      try {
-        return await response.json();
-      } catch {
-        return {}; // Caso o backend não envie JSON
-      }
+      return responseData;
     },
-    onSuccess: () => {
-      window.location.href = "/dashboard";
+    onSuccess: (data) => {
+      if (data.role === 'ADMIN') {
+        window.location.href = "/admin-dashboard";
+      } else if (data.role === 'CONSULTANT') {
+        window.location.href = "/consultant-dashboard";
+      } else {
+        setError("Função de usuário não reconhecida.");
+      }
     },
     onError: (err: any) => {
       setError(err.message || "Erro desconhecido");
@@ -84,9 +82,10 @@ export default function LoginPage() {
           )}
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+            disabled={loginMutation.isPending}
+            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
           >
-            Entrar
+            {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
         <p className="text-center text-xs mt-6 text-gray-500">

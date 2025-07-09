@@ -1,9 +1,8 @@
 import { Router } from "express";
-// A correção está aqui: de "../db" para "./db"
-import { db } from "./db"; // Importa a conexão com o banco de dados
-import { users } from "@shared/schema"; // Importa a tabela de usuários do seu schema
+import { db } from "./db";
+import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt"; // Importa o bcrypt para senhas
+import bcrypt from "bcrypt";
 
 const authRoutes = Router();
 
@@ -11,13 +10,13 @@ authRoutes.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    return res.status(400).json({ message: "Usuário e senha são obrigatórios." });
+    return res.status(400).json({ message: "Nome de usuário e senha são obrigatórios." });
   }
 
   try {
     console.log(`Buscando usuário: ${username}`);
 
-    // Procura o usuário no banco de dados
+    // Procura o usuário no banco pela coluna 'username'
     const foundUser = await db.query.users.findFirst({
       where: eq(users.username, username),
     });
@@ -27,8 +26,7 @@ authRoutes.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Usuário ou senha inválidos" });
     }
 
-    // Compara a senha enviada com a senha hasheada no banco
-    const isPasswordCorrect = await bcrypt.compare(password, foundUser.password);
+    const isPasswordCorrect = await bcrypt.compare(password, foundUser.hashedPassword);
 
     if (!isPasswordCorrect) {
       console.log(`Senha incorreta para o usuário: ${username}`);
@@ -37,7 +35,6 @@ authRoutes.post("/login", async (req, res) => {
 
     console.log(`Usuário ${username} autenticado com sucesso. Função: ${foundUser.role}`);
 
-    // Retorna a mensagem de sucesso e a função (role) do usuário
     return res.status(200).json({
       message: "Login bem-sucedido!",
       role: foundUser.role,
