@@ -1,11 +1,9 @@
 import express from "express";
 import cors from "cors";
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 // Drizzle/DB imports
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { db, pool } from './db';
+import { db } from './db';
 
 // Suas rotas e lógica de seed
 import authRoutes from "./auth";
@@ -37,14 +35,8 @@ app.get("/api/migrate", async (req, res) => {
   try {
     console.log("Iniciando migração do banco de dados...");
 
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
-
-    // Caminho para a pasta de migrações na raiz do projeto
-    const migrationsFolder = path.join(__dirname, '../../drizzle');
-
-    console.log(`Lendo migrações da pasta: ${migrationsFolder}`);
-    await migrate(db, { migrationsFolder });
+    // CORREÇÃO: Usando o caminho direto para a pasta de migrações
+    await migrate(db, { migrationsFolder: './drizzle' });
 
     console.log("Migração concluída com sucesso!");
 
