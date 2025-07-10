@@ -1,19 +1,11 @@
 #!/usr/bin/env bash
-set -e  # Faz o script parar imediatamente se ocorrer qualquer erro
+# exit on error
+set -o errexit
 
-echo "🔧 Instalando dependências do backend..."
+# 1. Instala todas as dependências do backend listadas no package.json
+echo "Instalando dependências do backend..."
 npm install
 
-echo "📁 Entrando na pasta client..."
-cd client
-
-echo "🔧 Instalando dependências do frontend..."
-npm install
-
-echo "⚙️ Buildando o frontend com Vite..."
+# 2. Compila o código TypeScript para JavaScript (usando o script 'build' do package.json)
+echo "Compilando o servidor..."
 npm run build
-
-echo "🔙 Voltando para a raiz do projeto..."
-cd ..
-
-echo "✅ Build finalizado com sucesso."
