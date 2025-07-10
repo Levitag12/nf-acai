@@ -20,7 +20,6 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm): Promise<LoginResponse> => {
-      // Usando a URL completa do backend diretamente para garantir a conexão
       const apiUrl = "https://nf-acai.onrender.com/api/login";
 
       const response = await fetch(apiUrl, {

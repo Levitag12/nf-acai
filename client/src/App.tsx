@@ -1,7 +1,5 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-
-// Importações das suas páginas
 import LoginPage from './pages/login.tsx';
 import AdminDashboardPage from './pages/admin-dashboard.tsx';
 import ConsultantDashboardPage from './pages/consultant-dashboard.tsx';
