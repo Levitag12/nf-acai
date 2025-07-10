@@ -20,8 +20,8 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm): Promise<LoginResponse> => {
+      // Usando a URL completa do backend diretamente para garantir a conexão
       const apiUrl = "https://nf-acai.onrender.com/api/login";
-      console.log("PASSO 1: A tentar fazer fetch para:", apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "POST",
@@ -30,39 +30,27 @@ export default function LoginPage() {
         body: JSON.stringify(data),
       });
 
-      console.log("PASSO 2: Resposta do fetch recebida. Status:", response.status);
-
       const responseData = await response.json();
       if (!response.ok) {
-        console.error("ERRO: A API respondeu com um erro:", responseData);
         throw new Error(responseData.message || "Erro ao fazer login");
       }
-
-      console.log("PASSO 3: Resposta da API com sucesso:", responseData);
       return responseData;
     },
     onSuccess: (data) => {
-      console.log("PASSO 4: Sucesso! Função do utilizador:", data.role);
-
       if (data.role === 'ADMIN') {
-        console.log("PASSO 5: A navegar para /admin-dashboard");
         navigate("/admin-dashboard");
       } else if (data.role === 'CONSULTANT') {
-        console.log("PASSO 5: A navegar para /consultant-dashboard");
         navigate("/consultant-dashboard");
       } else {
-        console.error("ERRO: Função de utilizador não reconhecida:", data.role);
         setError("Função de utilizador não reconhecida.");
       }
     },
     onError: (err: any) => {
-      console.error("ERRO GERAL: A mutação falhou:", err);
       setError(err.message || "Erro desconhecido");
     },
   });
 
   const handleLoginClick = () => {
-    console.log("PASSO 0: Botão de login clicado.");
     setError(null);
     loginMutation.mutate({ username, password });
   };

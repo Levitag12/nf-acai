@@ -10,14 +10,9 @@ import NotFoundPage from './pages/not-found.tsx';
 function App() {
   return (
     <Routes>
-      {/* Rota Principal */}
       <Route path="/" element={<LoginPage />} />
-
-      {/* Rotas dos Dashboards */}
       <Route path="/admin-dashboard" element={<AdminDashboardPage />} />
       <Route path="/consultant-dashboard" element={<ConsultantDashboardPage />} />
-
-      {/* Rota para qualquer outro caminho não encontrado */}
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
