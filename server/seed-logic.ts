@@ -1,12 +1,11 @@
-import { db } from './db';
-import * as schema from '@shared/schema';
+import { db } from './db.js';
+import * as schema from '../shared/schema.js'; // <-- CORREÇÃO AQUI
 import bcrypt from 'bcrypt';
 
 export async function runSeed() {
   console.log("🌱 Iniciando a população do banco de dados a partir do endpoint...");
 
   console.log("🗑️  Limpando tabelas existentes...");
-  // O backend já usa o driver correto (pg), então o db.delete funciona.
   await db.delete(schema.attachments);
   await db.delete(schema.documents);
   await db.delete(schema.users);
