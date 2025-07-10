@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom"; // 1. Importar o hook de navegação
 
 interface LoginForm {
   username: string;
@@ -12,6 +13,7 @@ interface LoginResponse {
 }
 
 export default function LoginPage() {
+  const navigate = useNavigate(); // 2. Inicializar o hook
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +34,13 @@ export default function LoginPage() {
       return responseData;
     },
     onSuccess: (data) => {
+      // 3. Usar o navigate para redirecionar do lado do cliente
       if (data.role === 'ADMIN') {
-        window.location.href = "/admin-dashboard";
+        navigate("/admin-dashboard");
       } else if (data.role === 'CONSULTANT') {
-        window.location.href = "/consultant-dashboard";
+        navigate("/consultant-dashboard");
       } else {
-        setError("Função de usuário não reconhecida.");
+        setError("Função de utilizador não reconhecida.");
       }
     },
     onError: (err: any) => {
@@ -93,7 +96,7 @@ export default function LoginPage() {
         </p>
         <div className="mt-4 text-center text-sm font-semibold bg-gray-200 p-2 rounded">
           Sistema inteligente para gestão de notas fiscais e pedidos da unidade
-          de Açailândia – Safra 2025/2026
+          de Açailândia
         </div>
       </div>
     </div>
