@@ -20,9 +20,6 @@ export default function LoginPage() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginForm): Promise<LoginResponse> => {
-
-      // --- CORREÇÃO DEFINITIVA ---
-      // Usando a URL completa do backend diretamente no código
       const apiUrl = "https://nf-acai.onrender.com/api/login";
 
       const response = await fetch(apiUrl, {
@@ -52,10 +49,16 @@ export default function LoginPage() {
     },
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLoginClick = () => {
     setError(null);
     loginMutation.mutate({ username, password });
+  };
+
+  // Permite o login ao pressionar "Enter" nos campos de input
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleLoginClick();
+    }
   };
 
   return (
@@ -67,12 +70,14 @@ export default function LoginPage() {
         <p className="text-center text-sm mb-6 text-gray-600">
           Entre com seu login para acessar o sistema
         </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* O <form> foi removido para evitar qualquer comportamento padrão */}
+        <div className="space-y-4">
           <input
             type="text"
             placeholder="Usuário"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
+            onKeyPress={handleKeyPress}
             required
             className="w-full px-4 py-2 border rounded"
           />
@@ -81,20 +86,23 @@ export default function LoginPage() {
             placeholder="Senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyPress={handleKeyPress}
             required
             className="w-full px-4 py-2 border rounded"
           />
           {error && (
             <p className="text-red-500 text-sm">{error}</p>
           )}
+          {/* O botão agora é do tipo "button" e usa onClick */}
           <button
-            type="submit"
+            type="button"
+            onClick={handleLoginClick}
             disabled={loginMutation.isPending}
             className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
           >
             {loginMutation.isPending ? 'Entrando...' : 'Entrar'}
           </button>
-        </form>
+        </div>
         <p className="text-center text-xs mt-6 text-gray-500">
           Feito por Welington Lima
         </p>
