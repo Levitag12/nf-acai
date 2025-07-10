@@ -7,6 +7,7 @@ import AdminDashboardPage from './pages/admin-dashboard.tsx';
 import ConsultantDashboardPage from './pages/consultant-dashboard.tsx';
 import NotFoundPage from './pages/not-found.tsx';
 
+// Declaração única da função App
 function App() {
   return (
     <Routes>
@@ -24,7 +25,3 @@ function App() {
 }
 
 export default App;
-// Forçando uma nova atualização
-function App() {
-  // ... resto do seu código
-}
