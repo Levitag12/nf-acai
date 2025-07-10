@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "./db";
+import { db } from "./db.js"; // <-- Adicionado .js
 import { users } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
