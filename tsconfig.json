@@ -10,7 +10,8 @@
     "baseUrl": ".",
     "paths": {
       "@shared/*": ["./shared/*"]
-    }
+    },
+    "outDir": "./dist" // Adiciona esta linha para definir a pasta de saída
   },
-  "include": ["server", "shared"]
+  "include": ["server", "shared"] // Diz ao compilador para incluir estas pastas
 }
