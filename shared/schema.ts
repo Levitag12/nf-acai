@@ -14,10 +14,16 @@ import { relations } from "drizzle-orm";
 
 // Enums
 export const userRoleEnum = pgEnum("user_role", ["ADMIN", "CONSULTANT"]);
-export const documentStatusEnum = pgEnum("document_status", ["DELIVERED", "RECEIPT_CONFIRMED", "RETURN_SENT", "COMPLETED", "ARCHIVED"]);
+export const documentStatusEnum = pgEnum("document_status", [
+  "DELIVERED",
+  "RECEIPT_CONFIRMED",
+  "RETURN_SENT",
+  "COMPLETED",
+  "ARCHIVED",
+]);
 export const attachmentTypeEnum = pgEnum("attachment_type", ["INITIAL", "RETURN"]);
 
-// Tabela de Sessões (CORRIGIDA)
+// Sessões
 export const sessions = pgTable(
   "sessions",
   {
@@ -25,13 +31,12 @@ export const sessions = pgTable(
     sess: jsonb("sess").notNull(),
     expire: timestamp("expire").notNull(),
   },
-  // A sintaxe do índice foi corrigida para ser um objeto
   (table) => ({
     expireIndex: index("IDX_session_expire").on(table.expire),
   })
 );
 
-// Tabela de Utilizadores
+// Usuários
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   username: varchar("username").unique().notNull(),
@@ -43,20 +48,24 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Tabela de Documentos
+// Documentos
 export const documents = pgTable("documents", {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
   status: documentStatusEnum("status").default("DELIVERED").notNull(),
-  consultantId: varchar("consultant_id").references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  consultantId: varchar("consultant_id")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Tabela de Anexos
+// Anexos
 export const attachments = pgTable("attachments", {
   id: uuid("id").primaryKey().defaultRandom(),
-  documentId: uuid("document_id").references(() => documents.id, { onDelete: 'cascade' }).notNull(),
+  documentId: uuid("document_id")
+    .references(() => documents.id, { onDelete: "cascade" })
+    .notNull(),
   fileName: text("file_name").notNull(),
   fileUrl: text("file_url").notNull(),
   attachmentType: attachmentTypeEnum("attachment_type").notNull(),
@@ -83,25 +92,26 @@ export const attachmentsRelations = relations(attachments, ({ one }) => ({
   }),
 }));
 
-// Schemas para inserção (Zod)
-export const insertUserSchema = createInsertSchema(users).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+// Schemas para Zod (inserção)
+export const insertUserSchema = createInsertSchema(users, {
+  role: z.enum(["ADMIN", "CONSULTANT"]),
 });
 
-export const insertDocumentSchema = createInsertSchema(documents).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const insertDocumentSchema = createInsertSchema(documents, {
+  status: z.enum([
+    "DELIVERED",
+    "RECEIPT_CONFIRMED",
+    "RETURN_SENT",
+    "COMPLETED",
+    "ARCHIVED",
+  ]),
 });
 
-export const insertAttachmentSchema = createInsertSchema(attachments).omit({
-  id: true,
-  uploadedAt: true,
+export const insertAttachmentSchema = createInsertSchema(attachments, {
+  attachmentType: z.enum(["INITIAL", "RETURN"]),
 });
 
-// Tipos exportados para uso na aplicação
+// Tipos inferidos
 export type User = typeof users.$inferSelect;
 export type UpsertUser = typeof users.$inferInsert;
 export type InsertUser = z.infer<typeof insertUserSchema>;

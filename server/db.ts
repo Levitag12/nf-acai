@@ -1,16 +1,20 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
-import * as schema from "../shared/schema.js"; // <-- CORREÇÃO AQUI
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import * as schema from "../shared/schema.js"; // <- mantém .js se estiver buildando com tsc
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set.");
+// Validação de variável de ambiente
+const databaseUrl = process.env.DATABASE_URL;
+if (!databaseUrl) {
+  throw new Error("❌ DATABASE_URL não está definida no ambiente.");
 }
 
+// Conexão com o banco de dados
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: databaseUrl,
   ssl: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false // Necessário no Render/Heroku
   }
 });
 
+// Drizzle ORM com tipagem de schema
 export const db = drizzle(pool, { schema });
